@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Awareness OS</title>
+    <!-- Bootstrap 5 Layout Stylesheet -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons Vector Pack Stylesheet -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.2/font/bootstrap-icons.min.css" rel="stylesheet">
+    <!-- Verified Chart.js Production Engine -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.6.1/dist/chart.umd.min.js"></script>
+    <style>
+        body { background-color: #0f172a; color: #f8fafc; }
+        .card-custom { background-color: #1e293b; border: 1px solid #334155; border-radius: 0.75rem; }
+        .bg-inner { background-color: #0b0f19; border-radius: 0.5rem; }
+    </style>
+</head>
+<body>
+
+    <!-- Header Navigation -->
+    <nav class="navbar navbar-dark bg-dark border-bottom border-secondary px-4 py-3 shadow">
+        <div class="container-fluid d-flex justify-content-between align-items-center">
+            <span class="navbar-brand mb-0 h1 text-success font-monospace d-flex align-items-center gap-2">
+                <i class="bi bi-lock-fill"></i> Awareness OS
+            </span>
+            
+            <!-- Navigation Tabs Group with Sleek Vector Icons -->
+            <div class="btn-group bg-inner p-1" role="group">
+                <button id="tab-wellness" type="button" class="btn btn-success btn-sm active px-3 d-flex align-items-center gap-2">
+                    <i class="bi bi-activity"></i> Wellness
+                </button>
+                <button id="tab-budget" type="button" class="btn btn-outline-secondary text-light btn-sm border-0 px-3 d-flex align-items-center gap-2">
+                    <i class="bi bi-wallet2"></i> Budget
+                </button>
+                <button id="tab-investment" type="button" class="btn btn-outline-secondary text-light btn-sm border-0 px-3 d-flex align-items-center gap-2">
+                    <i class="bi bi-graph-up-arrow"></i> Investments
+                </button>
+                <button id="tab-dividends" type="button" class="btn btn-outline-secondary text-light btn-sm border-0 px-3 d-flex align-items-center gap-2">
+                    <i class="bi bi-cash-coin"></i> Dividends
+                </button>
+            </div>
+
+            <button id="btn-login" class="btn btn-outline-light btn-sm px-4 d-flex align-items-center gap-2">
+                <i class="bi bi-person-check-fill"></i> Authenticate
+            </button>
+        </div>
+    </nav>
+
+    <!-- Main Content Container -->
+        <!-- Main Content Container -->
+    <main class="container my-5">
+        
+        <!-- Secure Unauthenticated Lock Screen Layer -->
+        <div id="lockscreen" class="text-center py-5 border border-secondary border-dashed rounded-3 card-custom bg-opacity-10 shadow-lg">
+            <div class="display-4 text-muted mb-3"><i class="bi bi-shield-lock-fill"></i></div>
+            <h3 class="text-secondary fw-semibold">Session Locked</h3>
+            <p class="text-muted mx-auto mt-2" style="max-width: 420px;">Awareness relies entirely on secure client cookies. Authenticate via your Google workspace account to release metrics.</p>
+        </div>
+
+        <!-- Protected Dashboard Content View Grid -->
+        <div id="dashboard-contents" class="d-none space-y-4">
+            
+            <!-- 🏃‍♂️ PANEL 1: WELLNESS WORKSPACE -->
+            <div id="panel-wellness" class="view-panel row g-4">
+                
+                <!-- Quick Summary Metrics Banner (Four-Card Wellness Ingestion Structure) -->
+                <div class="col-12">
+                    <div class="row g-4">
+                        <div class="col-12 col-sm-6 col-lg-3">
+                            <div class="card-custom p-4 shadow-sm">
+                                <small class="text-uppercase tracking-wider fw-bold" style="font-size: 0.725rem; color: #f1f5f9;">Current Weight</small>
+                                <h3 class="mt-2 mb-0 text-success fw-bold">247 <span class="fs-6 fw-normal" style="color: #cbd5e1;">lbs</span></h3>
+                            </div>
+                        </div>
+                        <div class="col-12 col-sm-6 col-lg-3">
+                            <div class="card-custom p-4 shadow-sm">
+                                <small class="text-uppercase tracking-wider fw-bold" style="font-size: 0.725rem; color: #f1f5f9;">Net Loss Progress</small>
+                                <h3 class="mt-2 mb-0 text-success fw-bold">-18 <span class="fs-6 fw-normal" style="color: #cbd5e1;">lbs</span></h3>
+                            </div>
+                        </div>
+                        <div class="col-12 col-sm-6 col-lg-3">
+                            <div class="card-custom p-4 shadow-sm">
+                                <small class="text-uppercase tracking-wider fw-bold" style="font-size: 0.725rem; color: #f1f5f9;">Current Month Diet Days</small>
+                                <h3 class="mt-2 mb-0 text-info fw-bold">-- <span class="fs-6 fw-normal" style="color: #cbd5e1;">days</span></h3>
+                            </div>
+                        </div>
+                        <div class="col-12 col-sm-6 col-lg-3">
+                            <div class="card-custom p-4 shadow-sm">
+                                <small class="text-uppercase tracking-wider fw-bold" style="font-size: 0.725rem; color: #f1f5f9;">Current Month Gym Days</small>
+                                <h3 class="mt-2 mb-0 text-info fw-bold">-- <span class="fs-6 fw-normal" style="color: #cbd5e1;">days</span></h3>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+
+
+
+                <!-- Weight Transformation Line Chart Layout -->
+                <div class="col-12 col-lg-8">
+                    <div class="card-custom p-4 h-100 d-flex flex-column justify-content-between">
+                        <div>
+                            <h5 class="text-success mb-1 fw-bold d-flex align-items-center gap-2">
+                                <i class="bi bi-activity"></i> Weight Transformation History
+                            </h5>
+                            <p class="small text-secondary mb-0">Tracking metrics trends dynamically over time</p>
+                        </div>
+                        <div class="bg-inner p-2 border border-secondary mt-3 position-relative" style="height: 280px;">
+                            <canvas id="chart-weight"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Gym Habits & Diet Log Data Tables Layout -->
+                <div class="col-12 col-lg-4">
+                    <div class="card-custom p-4 h-100 d-flex flex-column">
+                        <div>
+                            <h5 class="text-info mb-1 fw-bold d-flex align-items-center gap-2">
+                                <i class="bi bi-clipboard-data-fill"></i> Recent Activity Logs
+                            </h5>
+                            <p class="small text-secondary mb-0">Raw spreadsheet logs parsed from source rows</p>
+                        </div>
+                        <div class="bg-inner border border-secondary overflow-auto mt-3 flex-grow-1" style="max-height: 280px;">
+                            <table id="table-wellness" class="table table-dark table-hover table-borderless mb-0 small">
+                                <!-- Injected cleanly by app.js -->
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 💰 PANEL 2: BUDGET WORKSPACE -->
+            <div id="panel-budget" class="view-panel row g-4 d-none">
+                <div class="col-12">
+                    <div class="card-custom p-5 text-center shadow-lg">
+                        <div class="display-6 text-muted mb-3"><i class="bi bi-wallet2"></i></div>
+                        <h4 class="text-secondary fw-semibold">Budget Workspace</h4>
+                        <p class="text-secondary opacity-50 mx-auto mt-1" style="max-width: 400px;">Sandbox view for daily expense ledger entries, income splits, and net metrics.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 📈 PANEL 3: INVESTMENT WORKSPACE -->
+            <div id="panel-investment" class="view-panel row g-4 d-none">
+                <div class="col-12">
+                    <div class="card-custom p-5 text-center shadow-lg">
+                        <div class="display-6 text-muted mb-3"><i class="bi bi-graph-up-arrow"></i></div>
+                        <h4 class="text-secondary fw-semibold">Portfolio Workspace</h4>
+                        <p class="text-secondary opacity-50 mx-auto mt-1" style="max-width: 400px;">Sandbox view for tracking liquid investment allocations and transaction histories.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 💸 PANEL 4: DIVIDENDS WORKSPACE -->
+            <div id="panel-dividends" class="view-panel row g-4 d-none">
+                <div class="col-12">
+                    <div class="card-custom p-5 text-center shadow-lg">
+                        <div class="display-6 text-muted mb-3"><i class="bi bi-cash-coin"></i></div>
+                        <h4 class="text-secondary fw-semibold">Dividend Tracker Workspace</h4>
+                        <p class="text-secondary opacity-50 mx-auto mt-1" style="max-width: 400px;">Sandbox view for compound cash flow and distributions ledger records.</p>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    
+    <!-- Bootstrap JavaScript Events Engine Module -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.min.js"></script>
+    
+    <!-- Custom Core Execution Engine Links -->
+    <script src="assets/js/components/charts.js"></script>
+    <script src="assets/js/app.js"></script>
+</body>
+</html>
