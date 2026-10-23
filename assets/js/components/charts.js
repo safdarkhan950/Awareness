@@ -1,37 +1,61 @@
 const ChartComponents = {
-    renderWeightChart(canvasId) {
-        const ctx = document.getElementById(canvasId).getContext('2d');
-        
-        // Static mock arrays mapping your weight journey
-        const mockDates = ['Week 1', 'Week 2', 'Week 3', 'Week 4', 'Week 5', 'Week 6'];
-        
-        // Bypassing bracket limitations with Array.of
-        const mockWeights = Array.of(265, 261, 256, 252, 249, 247);
+    charts: new Map(),
 
-        new Chart(ctx, {
+    createChart(canvasId, type, labels, datasets, options = {}) {
+        const canvas = document.getElementById(canvasId);
+        if (!canvas) return null;
+
+        this.charts.get(canvasId)?.destroy();
+
+        const chart = new Chart(canvas, {
+            type,
+            data: { labels, datasets },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: options.plugins || { legend: { display: false } },
+                scales: options.scales || {}
+            }
+        });
+
+        this.charts.set(canvasId, chart);
+        return chart;
+    },
+
+    createLineChart(canvasId, labels, values, options = {}) {
+        const canvas = document.getElementById(canvasId);
+        if (!canvas) return null;
+
+        this.charts.get(canvasId)?.destroy();
+
+        const chart = new Chart(canvas, {
             type: 'line',
             data: {
-                labels: mockDates,
+                labels,
                 datasets: [{
-                    label: 'Weight (lbs)',
-                    data: mockWeights,
-                    borderColor: '#10b981', 
-                    backgroundColor: 'rgba(16, 185, 129, 0.04)',
-                    borderWidth: 3,
-                    pointBackgroundColor: '#10b981',
-                    tension: 0.25,
-                    fill: true
+                    label: options.label || '',
+                    data: values,
+                    borderColor: options.borderColor || '#10b981',
+                    backgroundColor: options.backgroundColor || 'rgba(16, 185, 129, 0.04)',
+                    borderWidth: options.borderWidth || 3,
+                    pointBackgroundColor: options.pointBackgroundColor || options.borderColor || '#10b981',
+                    tension: options.tension ?? 0.25,
+                    fill: options.fill ?? true
                 }]
             },
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
                 plugins: { legend: { display: false } },
-                scales: {
-                    y: { grid: { color: 'rgba(255, 255, 255, 0.05)' }, ticks: { color: '#94a3b8' } },
-                    x: { grid: { display: false }, ticks: { color: '#94a3b8' } }
-                }
+                scales: options.scales || {}
             }
         });
+
+        this.charts.set(canvasId, chart);
+        return chart;
+    },
+
+    createBarChart(canvasId, labels, datasets, options = {}) {
+        return this.createChart(canvasId, 'bar', labels, datasets, options);
     }
 };
