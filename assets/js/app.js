@@ -224,6 +224,12 @@ document.addEventListener("DOMContentLoaded", () => {
     if (typeof WellnessComponents !== 'undefined') {
         WellnessComponents.init();
     }
+    if (typeof BudgetComponents !== 'undefined') {
+        BudgetComponents.init();
+    }
+    if (typeof InvestmentsComponents !== 'undefined') {
+        InvestmentsComponents.init();
+    }
 
     /* ====================================================================== */
     /* NAVIGATION VIEW ROUTING SUBROUTINE                                     */

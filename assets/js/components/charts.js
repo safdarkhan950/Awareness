@@ -57,5 +57,20 @@ const ChartComponents = {
 
     createBarChart(canvasId, labels, datasets, options = {}) {
         return this.createChart(canvasId, 'bar', labels, datasets, options);
+    },
+
+    createPieChart(canvasId, labels, values, options = {}) {
+        const chart = this.createChart(canvasId, 'pie', labels, [{
+            label: options.label || '',
+            data: values,
+            backgroundColor: options.backgroundColor || [
+                '#38bdf8', '#22c55e', '#f59e0b', '#ef4444', '#a78bfa',
+                '#14b8a6', '#f97316', '#84cc16', '#ec4899', '#64748b'
+            ],
+            borderColor: '#0b0f19',
+            borderWidth: 2
+        }], options);
+
+        return chart;
     }
 };

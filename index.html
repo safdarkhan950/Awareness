@@ -131,10 +131,95 @@
             <!-- 💰 PANEL 2: BUDGET WORKSPACE -->
             <div id="panel-budget" class="view-panel row g-4 d-none">
                 <div class="col-12">
-                    <div class="card-custom p-5 text-center shadow-lg">
-                        <div class="display-6 text-muted mb-3"><i class="bi bi-wallet2"></i></div>
-                        <h4 class="text-secondary fw-semibold">Budget Workspace</h4>
-                        <p class="text-secondary opacity-50 mx-auto mt-1" style="max-width: 400px;">Sandbox view for daily expense ledger entries, income splits, and net metrics.</p>
+                    <div class="row g-4">
+                        <div class="col-12 col-sm-6 col-lg">
+                            <div class="card-custom p-4 shadow-sm h-100">
+                                <small class="text-uppercase fw-bold text-secondary" style="font-size: 0.725rem;">Total Income</small>
+                                <h3 id="budget-total-income" class="mt-2 mb-0 text-success fw-bold">--</h3>
+                            </div>
+                        </div>
+                        <div class="col-12 col-sm-6 col-lg">
+                            <div class="card-custom p-4 shadow-sm h-100">
+                                <small class="text-uppercase fw-bold text-secondary" style="font-size: 0.725rem;">Total Expenses</small>
+                                <h3 id="budget-total-expenses" class="mt-2 mb-0 text-danger fw-bold">--</h3>
+                            </div>
+                        </div>
+                        <div class="col-12 col-sm-6 col-lg">
+                            <div class="card-custom p-4 shadow-sm h-100">
+                                <small class="text-uppercase fw-bold text-secondary" style="font-size: 0.725rem;">Net Savings</small>
+                                <h3 id="budget-net-savings" class="mt-2 mb-0 text-success fw-bold">--</h3>
+                            </div>
+                        </div>
+                        <div class="col-12 col-sm-6 col-lg">
+                            <div class="card-custom p-4 shadow-sm h-100">
+                                <small class="text-uppercase fw-bold text-secondary" style="font-size: 0.725rem;">Current Month Income</small>
+                                <h3 id="budget-month-income" class="mt-2 mb-0 text-success fw-bold">--</h3>
+                            </div>
+                        </div>
+                        <div class="col-12 col-sm-6 col-lg">
+                            <div class="card-custom p-4 shadow-sm h-100">
+                                <small class="text-uppercase fw-bold text-secondary" style="font-size: 0.725rem;">Current Month Expenses</small>
+                                <h3 id="budget-month-expenses" class="mt-2 mb-0 text-danger fw-bold">--</h3>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-12">
+                    <div class="card-custom p-4">
+                        <div>
+                            <h5 class="text-success mb-1 fw-bold d-flex align-items-center gap-2">
+                                <i class="bi bi-bar-chart-line"></i> Income vs Expenses
+                            </h5>
+                            <p class="small text-secondary mb-0">Monthly totals for the available history</p>
+                        </div>
+                        <div class="bg-inner p-2 border border-secondary mt-3 position-relative" style="height: 360px;">
+                            <canvas id="chart-budget-monthly"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-12 d-flex flex-wrap align-items-end justify-content-between gap-3">
+                    <div>
+                        <h5 class="text-info mb-1 fw-bold d-flex align-items-center gap-2">
+                            <i class="bi bi-funnel"></i> Expense Breakdown
+                        </h5>
+                        <p class="small text-secondary mb-0">Choose a period or select a pie segment</p>
+                    </div>
+                    <label class="d-flex flex-column gap-1 small text-secondary">
+                        Month / Year
+                        <select id="budget-period-filter" class="form-select form-select-sm" style="min-width: 180px;">
+                            <option value="all">All</option>
+                        </select>
+                    </label>
+                </div>
+
+                <div class="col-12 col-lg-6">
+                    <div class="card-custom p-4 h-100">
+                        <div class="bg-inner p-2 border border-secondary position-relative" style="height: 360px;">
+                            <canvas id="chart-budget-categories"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-12 col-lg-6">
+                    <div class="card-custom p-4 h-100">
+                        <div class="d-flex align-items-center justify-content-between gap-3 mb-3">
+                            <h6 class="mb-0 text-light fw-bold">Expenses</h6>
+                            <button id="budget-category-clear" type="button" class="btn btn-outline-secondary btn-sm d-none">Show all categories</button>
+                        </div>
+                        <div class="bg-inner border border-secondary overflow-auto" style="height: 360px;">
+                            <table class="table table-dark table-hover table-borderless mb-0 small">
+                                <thead>
+                                    <tr>
+                                        <th><button type="button" class="btn btn-link btn-sm p-0 text-decoration-none text-light" data-budget-sort="date">Date<span data-budget-sort-indicator></span></button></th>
+                                        <th><button type="button" class="btn btn-link btn-sm p-0 text-decoration-none text-light" data-budget-sort="category">Category<span data-budget-sort-indicator></span></button></th>
+                                        <th class="text-end"><button type="button" class="btn btn-link btn-sm p-0 text-decoration-none text-light" data-budget-sort="amount">Amount<span data-budget-sort-indicator></span></button></th>
+                                    </tr>
+                                </thead>
+                                <tbody id="budget-expense-list"></tbody>
+                            </table>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -142,10 +227,77 @@
             <!-- 📈 PANEL 3: INVESTMENT WORKSPACE -->
             <div id="panel-investment" class="view-panel row g-4 d-none">
                 <div class="col-12">
-                    <div class="card-custom p-5 text-center shadow-lg">
-                        <div class="display-6 text-muted mb-3"><i class="bi bi-graph-up-arrow"></i></div>
-                        <h4 class="text-secondary fw-semibold">Portfolio Workspace</h4>
-                        <p class="text-secondary opacity-50 mx-auto mt-1" style="max-width: 400px;">Sandbox view for tracking liquid investment allocations and transaction histories.</p>
+                    <div class="row g-4">
+                        <div class="col-12 col-sm-6 col-lg">
+                            <div class="card-custom p-4 h-100">
+                                <small class="text-uppercase fw-bold text-secondary" style="font-size: 0.725rem;">Net Worth</small>
+                                <h3 id="investment-net-worth" class="mt-2 mb-0 text-success fw-bold">--</h3>
+                            </div>
+                        </div>
+                        <div class="col-12 col-sm-6 col-lg">
+                            <div class="card-custom p-4 h-100">
+                                <small class="text-uppercase fw-bold text-secondary" style="font-size: 0.725rem;">Brokerage Total</small>
+                                <h3 id="investment-brokerage-total" class="mt-2 mb-0 text-info fw-bold">--</h3>
+                            </div>
+                        </div>
+                        <div class="col-12 col-sm-6 col-lg">
+                            <div class="card-custom p-4 h-100">
+                                <small class="text-uppercase fw-bold text-secondary" style="font-size: 0.725rem;">Retirement Total</small>
+                                <h3 id="investment-retirement-total" class="mt-2 mb-0 text-primary fw-bold">--</h3>
+                            </div>
+                        </div>
+                        <div class="col-12 col-sm-6 col-lg">
+                            <div class="card-custom p-4 h-100">
+                                <small class="text-uppercase fw-bold text-secondary" style="font-size: 0.725rem;">FIRE Projection</small>
+                                <h3 id="investment-fire-projection" class="mt-2 mb-0 text-success fw-bold">--</h3>
+                            </div>
+                        </div>
+                        <div class="col-12 col-sm-6 col-lg">
+                            <div class="card-custom p-4 h-100">
+                                <small class="text-uppercase fw-bold text-secondary" style="font-size: 0.725rem;">Retirement Projection</small>
+                                <h3 id="investment-retirement-projection" class="mt-2 mb-0 text-success fw-bold">--</h3>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-12 col-lg-6">
+                    <div class="card-custom p-4 h-100">
+                        <h5 class="text-success fw-bold mb-1"><i class="bi bi-pie-chart"></i> Current Allocation</h5>
+                        <p id="investment-current-date" class="small text-secondary mb-0">Latest snapshot</p>
+                        <div class="bg-inner p-2 border border-secondary mt-3 position-relative" style="height: 360px;">
+                            <canvas id="chart-investment-allocation"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-12 col-lg-6">
+                    <div class="card-custom p-4 h-100">
+                        <h5 class="text-info fw-bold mb-1"><i class="bi bi-graph-up"></i> Account Growth</h5>
+                        <p class="small text-secondary mb-0">History for every account snapshot</p>
+                        <div class="bg-inner p-2 border border-secondary mt-3 position-relative" style="height: 360px;">
+                            <canvas id="chart-investment-history"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-12 col-lg-6">
+                    <div class="card-custom p-4 h-100">
+                        <h5 class="text-success fw-bold mb-1"><i class="bi bi-compass"></i> FIRE Projection</h5>
+                        <p id="investment-fire-duration" class="small text-secondary mb-0">17-year taxable brokerage projection remaining</p>
+                        <div class="bg-inner p-2 border border-secondary mt-3 position-relative" style="height: 360px;">
+                            <canvas id="chart-investment-fire"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-12 col-lg-6">
+                    <div class="card-custom p-4 h-100">
+                        <h5 class="text-success fw-bold mb-1"><i class="bi bi-piggy-bank"></i> Retirement Projection</h5>
+                        <p id="investment-retirement-duration" class="small text-secondary mb-0">30-year retirement projection remaining</p>
+                        <div class="bg-inner p-2 border border-secondary mt-3 position-relative" style="height: 360px;">
+                            <canvas id="chart-investment-retirement"></canvas>
+                        </div>
                     </div>
                 </div>
             </div>
