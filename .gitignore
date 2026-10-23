@@ -1,0 +1,11 @@
+# Local VS Code configurations
+.vscode/
+
+# Local configuration secrets and spreadsheet tokens
+config.json
+sessionStorage/
+*.log
+
+# OS generated system files
+.DS_Store
+Thumbs.db
