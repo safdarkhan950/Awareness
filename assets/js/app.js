@@ -83,10 +83,15 @@ async function fetchAllSpreadsheetTabs() {
         { key: 'investment', spreadsheetId: window.appConfig.awareness_id, sheetName: window.appConfig.investment_sheet_name }
     ];
 
-    const dividendTargets = window.appConfig.dividend_id ? [
+    const dividendConfigured = Boolean(
+        window.appConfig.dividend_id
+        && window.appConfig.dividend_schd_sheet_name
+        && window.appConfig.dividend_spyi_sheet_name
+    );
+    const dividendTargets = dividendConfigured ? [
         { key: 'dividend_schd', spreadsheetId: window.appConfig.dividend_id, sheetName: window.appConfig.dividend_schd_sheet_name },
         { key: 'dividend_spyi', spreadsheetId: window.appConfig.dividend_id, sheetName: window.appConfig.dividend_spyi_sheet_name }
-    ].filter(target => target.sheetName) : [];
+    ] : [];
 
     const targets = [...awarenessTargets, ...dividendTargets];
     const missingAwarenessTarget = awarenessTargets.find(target => !target.spreadsheetId || !target.sheetName);
@@ -229,6 +234,9 @@ document.addEventListener("DOMContentLoaded", () => {
     }
     if (typeof InvestmentsComponents !== 'undefined') {
         InvestmentsComponents.init();
+    }
+    if (typeof DividendsComponents !== 'undefined') {
+        DividendsComponents.init();
     }
 
     /* ====================================================================== */

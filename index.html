@@ -16,6 +16,9 @@
         body { background-color: #0f172a; color: #f8fafc; }
         .card-custom { background-color: #1e293b; border: 1px solid #334155; border-radius: 0.75rem; }
         .bg-inner { background-color: #0b0f19; border-radius: 0.5rem; }
+        .dividend-metric-grid { grid-template-columns: repeat(5, minmax(0, 1fr)); }
+        @media (max-width: 991.98px) { .dividend-metric-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+        @media (max-width: 575.98px) { .dividend-metric-grid { grid-template-columns: 1fr; } }
     </style>
 </head>
 <body>
@@ -305,10 +308,110 @@
             <!-- 💸 PANEL 4: DIVIDENDS WORKSPACE -->
             <div id="panel-dividends" class="view-panel row g-4 d-none">
                 <div class="col-12">
-                    <div class="card-custom p-5 text-center shadow-lg">
-                        <div class="display-6 text-muted mb-3"><i class="bi bi-cash-coin"></i></div>
-                        <h4 class="text-secondary fw-semibold">Dividend Tracker Workspace</h4>
-                        <p class="text-secondary opacity-50 mx-auto mt-1" style="max-width: 400px;">Sandbox view for compound cash flow and distributions ledger records.</p>
+                    <div class="row g-4 justify-content-center">
+                        <div class="col-12 col-md-5">
+                            <div class="card-custom p-4 h-100 text-center">
+                                <small class="text-uppercase fw-bold text-secondary" style="font-size: 0.725rem;">Total Yearly Dividend</small>
+                                <h3 id="dividend-total-yearly" class="mt-2 mb-0 text-success fw-bold">--</h3>
+                            </div>
+                        </div>
+                        <div class="col-12 col-md-5">
+                            <div class="card-custom p-4 h-100 text-center">
+                                <small class="text-uppercase fw-bold text-secondary" style="font-size: 0.725rem;">Total Monthly Dividend</small>
+                                <h3 id="dividend-total-monthly" class="mt-2 mb-0 text-info fw-bold">--</h3>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-12">
+                    <div class="row g-4">
+                        <div class="col-12 col-lg-6">
+                            <div class="card-custom p-4 h-100">
+                                <div class="d-flex justify-content-between gap-3 mb-2">
+                                    <div>
+                                        <h5 class="text-success fw-bold mb-1"><i class="bi bi-trophy"></i> FIRE Goal</h5>
+                                        <small class="text-secondary">Goal: $50,000 yearly dividend</small>
+                                    </div>
+                                    <strong id="dividend-fire-percent" class="text-success">--</strong>
+                                </div>
+                                <div class="progress bg-black" style="height: 18px;" role="progressbar" aria-label="FIRE dividend goal">
+                                    <div id="dividend-fire-progress" class="progress-bar bg-success" style="width: 0%;"></div>
+                                </div>
+                                <small id="dividend-fire-caption" class="d-block text-secondary mt-2">-- of $50,000</small>
+                            </div>
+                        </div>
+                        <div class="col-12 col-lg-6">
+                            <div class="card-custom p-4 h-100">
+                                <div class="d-flex justify-content-between gap-3 mb-2">
+                                    <div>
+                                        <h5 class="text-info fw-bold mb-1"><i class="bi bi-wallet2"></i> Basic Income Goal</h5>
+                                        <small class="text-secondary">Goal: $2,000 monthly dividend</small>
+                                    </div>
+                                    <strong id="dividend-income-percent" class="text-info">--</strong>
+                                </div>
+                                <div class="progress bg-black" style="height: 18px;" role="progressbar" aria-label="Basic income dividend goal">
+                                    <div id="dividend-income-progress" class="progress-bar bg-info" style="width: 0%;"></div>
+                                </div>
+                                <small id="dividend-income-caption" class="d-block text-secondary mt-2">-- of $2,000</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-12">
+                    <div class="card-custom p-4">
+                        <h5 class="text-success fw-bold mb-1"><i class="bi bi-bar-chart-line"></i> Monthly Dividend Payouts</h5>
+                        <p class="small text-secondary mb-0">Dividend cash received by ticker</p>
+                        <div class="bg-inner p-2 border border-secondary mt-3 position-relative" style="height: 360px;">
+                            <canvas id="chart-dividend-monthly"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-12 d-flex flex-wrap align-items-end justify-content-between gap-3">
+                    <div>
+                        <h5 class="text-info fw-bold mb-1"><i class="bi bi-collection"></i> Ticker Details</h5>
+                        <p class="small text-secondary mb-0">Current metrics and transaction history</p>
+                    </div>
+                    <label class="d-flex flex-column gap-1 small text-secondary">
+                        Stock
+                        <select id="dividend-ticker-filter" class="form-select form-select-sm" style="min-width: 180px;">
+                            <option value="SCHD">SCHD</option>
+                            <option value="SPYI">SPYI</option>
+                        </select>
+                    </label>
+                </div>
+
+                <div class="col-12">
+                    <div class="d-grid gap-3 dividend-metric-grid">
+                        <div class="card-custom p-3 h-100 border-start border-3 border-success"><small class="text-secondary">Live Stock Price</small><strong id="dividend-live-price" class="d-block mt-2 text-success">--</strong></div>
+                        <div class="card-custom p-3 h-100 border-start border-3 border-success"><small class="text-secondary">Yearly Dividend</small><strong id="dividend-yearly-income" class="d-block mt-2 text-success">--</strong></div>
+                        <div class="card-custom p-3 h-100 border-start border-3 border-success"><small class="text-secondary">Monthly Dividend</small><strong id="dividend-monthly-income" class="d-block mt-2 text-success">--</strong></div>
+                        <div class="card-custom p-3 h-100 border-start border-3 border-success"><small class="text-secondary">Dividend Reinvested</small><strong id="dividend-reinvested" class="d-block mt-2 text-success">--</strong></div>
+                        <div class="card-custom p-3 h-100 border-start border-3 border-success"><small class="text-secondary">Personal Yield</small><strong id="dividend-yield" class="d-block mt-2 text-success">--</strong></div>
+                    </div>
+                    <div class="d-grid gap-3 mt-3 dividend-metric-grid">
+                        <div class="card-custom p-3 h-100 border-start border-3 border-success"><small class="text-secondary">Total Dollar Growth</small><strong id="dividend-dollar-growth" class="d-block mt-2">--</strong></div>
+                        <div class="card-custom p-3 h-100 border-start border-3 border-success"><small class="text-secondary">Percentage Growth</small><strong id="dividend-percent-growth" class="d-block mt-2">--</strong></div>
+                        <div class="card-custom p-3 h-100 border-start border-3 border-success"><small class="text-secondary">Avg Cost / Share</small><strong id="dividend-average-cost" class="d-block mt-2 text-success">--</strong></div>
+                        <div class="card-custom p-3 h-100 border-start border-3 border-success"><small class="text-secondary">Total Shares Owned</small><strong id="dividend-shares-owned" class="d-block mt-2 text-success">--</strong></div>
+                        <div class="card-custom p-3 h-100 border-start border-3 border-success"><small class="text-secondary">Market Value</small><strong id="dividend-market-value" class="d-block mt-2 text-success">--</strong></div>
+                    </div>
+                </div>
+
+                <div class="col-12">
+                    <div class="card-custom p-4">
+                        <div class="d-flex align-items-center justify-content-between gap-3 mb-3">
+                            <h5 class="text-info fw-bold mb-0">Transactions</h5>
+                            <span id="dividend-transaction-count" class="small text-secondary">--</span>
+                        </div>
+                        <div class="bg-inner border border-secondary overflow-auto" style="max-height: 420px;">
+                            <table class="table table-dark table-hover table-borderless mb-0 small">
+                                <thead><tr><th>Date</th><th>Type</th><th class="text-end">Shares Added</th><th class="text-end">Share Price</th><th class="text-end">Cash Transacted</th></tr></thead>
+                                <tbody id="dividend-transaction-list"></tbody>
+                            </table>
+                        </div>
                     </div>
                 </div>
             </div>
