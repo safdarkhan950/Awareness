@@ -1,8 +1,11 @@
 const DividendsComponents = {
     tickers: {},
+    payoutPeriod: 'year',
 
     init() {
         this.render({});
+        document.getElementById('dividend-payout-year').addEventListener('click', () => this.setPayoutPeriod('year'));
+        document.getElementById('dividend-payout-month').addEventListener('click', () => this.setPayoutPeriod('month'));
         document.getElementById('dividend-ticker-filter').addEventListener('change', event => {
             this.renderTicker(event.target.value);
         });
@@ -94,7 +97,22 @@ const DividendsComponents = {
             `${this.formatMoney(current)} of ${this.formatMoney(goal)} (${this.formatPercent(percentage)})`;
     },
 
+    setPayoutPeriod(period) {
+        this.payoutPeriod = period;
+        const yearButton = document.getElementById('dividend-payout-year');
+        const monthButton = document.getElementById('dividend-payout-month');
+
+        yearButton.className = period === 'year' ? 'btn btn-success' : 'btn btn-outline-secondary text-light';
+        monthButton.className = period === 'month' ? 'btn btn-success' : 'btn btn-outline-secondary text-light';
+        this.renderMonthlyPayoutChart();
+    },
+
     renderMonthlyPayoutChart() {
+        if (this.payoutPeriod === 'year') {
+            this.renderYearPayoutChart();
+            return;
+        }
+
         const payouts = new Map();
         ['SCHD', 'SPYI'].forEach(tickerName => {
             (this.tickers[tickerName]?.transactions || []).forEach(transaction => {
@@ -158,6 +176,35 @@ const DividendsComponents = {
                         ticks: { color: '#94a3b8' },
                         grid: { color: 'rgba(255, 255, 255, 0.05)' }
                     },
+                    x: { stacked: true, ticks: { color: '#94a3b8' }, grid: { display: false } }
+                }
+            }
+        );
+    },
+
+    renderYearPayoutChart() {
+        const payouts = new Map();
+        ['SCHD', 'SPYI'].forEach(tickerName => {
+            (this.tickers[tickerName]?.transactions || []).forEach(transaction => {
+                if (transaction.type.toLowerCase() !== 'dividend') return;
+                const year = transaction.date.getUTCFullYear();
+                if (!payouts.has(year)) payouts.set(year, { year, SCHD: 0, SPYI: 0 });
+                payouts.get(year)[tickerName] += transaction.cashTransacted;
+            });
+        });
+
+        const periods = [...payouts.values()].sort((first, second) => first.year - second.year);
+        ChartComponents.createBarChart(
+            'chart-dividend-monthly',
+            periods.map(period => String(period.year)),
+            [
+                { label: 'SCHD', stack: 'dividend-payouts', data: periods.map(period => period.SCHD), backgroundColor: '#38bdf8', borderColor: '#0b0f19', borderWidth: 1 },
+                { label: 'SPYI', stack: 'dividend-payouts', data: periods.map(period => period.SPYI), backgroundColor: '#22c55e', borderColor: '#0b0f19', borderWidth: 1 }
+            ],
+            {
+                plugins: { legend: { display: true, labels: { color: '#94a3b8' } } },
+                scales: {
+                    y: { beginAtZero: true, stacked: true, ticks: { color: '#94a3b8' }, grid: { color: 'rgba(255, 255, 255, 0.05)' } },
                     x: { stacked: true, ticks: { color: '#94a3b8' }, grid: { display: false } }
                 }
             }

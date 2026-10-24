@@ -65,10 +65,12 @@ const WellnessComponents = {
         const dietDays = currentRows.filter(row => row.diet === 'Y').length;
         const gymDays = currentRows.filter(row => row.gym === 'Y').length;
 
-        document.getElementById('wellness-diet-days').innerHTML =
-            `${dietDays} <span class="fs-6 fw-normal" style="color: #cbd5e1;">days</span>`;
-        document.getElementById('wellness-gym-days').innerHTML =
-            `${gymDays} <span class="fs-6 fw-normal" style="color: #cbd5e1;">days</span>`;
+        const dietElement = document.getElementById('wellness-diet-days');
+        const gymElement = document.getElementById('wellness-gym-days');
+        dietElement.innerHTML = `${dietDays} <span class="fs-6 fw-normal" style="color: #cbd5e1;">days</span>`;
+        gymElement.innerHTML = `${gymDays} <span class="fs-6 fw-normal" style="color: #cbd5e1;">days</span>`;
+        dietElement.className = `mt-2 mb-0 fw-bold ${dietDays >= 20 ? 'text-success' : 'text-danger'}`;
+        gymElement.className = `mt-2 mb-0 fw-bold ${gymDays >= 20 ? 'text-success' : 'text-danger'}`;
     },
 
     renderActivityChart(rows) {

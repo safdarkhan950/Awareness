@@ -362,8 +362,19 @@
 
                 <div class="col-12">
                     <div class="card-custom p-4">
-                        <h5 class="text-success fw-bold mb-1"><i class="bi bi-bar-chart-line"></i> Monthly Dividend Payouts</h5>
-                        <p class="small text-secondary mb-0">Dividend cash received by ticker</p>
+                        <div class="row align-items-start g-3">
+                            <div class="col-12 col-md-5">
+                                <h5 class="text-success fw-bold mb-1"><i class="bi bi-bar-chart-line"></i> Dividend Payouts</h5>
+                                <p class="small text-secondary mb-0">Dividend cash received by ticker</p>
+                            </div>
+                            <div class="col-12 col-md-2 d-flex justify-content-center">
+                                <div class="btn-group btn-group-sm" role="group" aria-label="Dividend payout period">
+                                    <button id="dividend-payout-year" type="button" class="btn btn-success">Year</button>
+                                    <button id="dividend-payout-month" type="button" class="btn btn-outline-secondary text-light">Month</button>
+                                </div>
+                            </div>
+                            <div class="col-md-5 d-none d-md-block" aria-hidden="true"></div>
+                        </div>
                         <div class="bg-inner p-2 border border-secondary mt-3 position-relative" style="height: 360px;">
                             <canvas id="chart-dividend-monthly"></canvas>
                         </div>
