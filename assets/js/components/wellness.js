@@ -1,8 +1,16 @@
 const WellnessComponents = {
+    weightRange: 30,
+    sourceRows: [],
+
     init() {
         this.render([]);
+        document.getElementById('wellness-weight-range').addEventListener('change', event => {
+            this.weightRange = event.target.value === 'all' ? null : Number(event.target.value);
+            this.render(this.sourceRows);
+        });
         document.addEventListener('awareness:data-ready', event => {
-            this.render(event.detail.wellness || []);
+            this.sourceRows = event.detail.wellness || [];
+            this.render(this.sourceRows);
         });
     },
 
@@ -110,9 +118,20 @@ const WellnessComponents = {
         );
     },
 
+    filterWeightRows(weightedRows) {
+        if (this.weightRange === null) return weightedRows;
+
+        const latestDate = weightedRows.at(-1)?.date;
+        if (!latestDate) return [];
+
+        const cutoff = new Date(latestDate);
+        cutoff.setUTCDate(cutoff.getUTCDate() - this.weightRange);
+        return weightedRows.filter(row => row.date >= cutoff);
+    },
+
     render(rows) {
         const wellnessRows = this.sanitizeRows(rows);
-        const weightedRows = wellnessRows.filter(row => row.weight !== null);
+        const weightedRows = this.filterWeightRows(wellnessRows.filter(row => row.weight !== null));
         const currentWeightElement = document.getElementById('wellness-current-weight');
         const netLossElement = document.getElementById('wellness-net-loss');
 
@@ -130,11 +149,13 @@ const WellnessComponents = {
             if (netLossElement) {
                 const lossSign = netLoss > 0 ? '+' : '';
                 netLossElement.innerHTML = `${lossSign}${netLoss.toLocaleString()} <span class="fs-6 fw-normal" style="color: #cbd5e1;">lbs</span>`;
+                netLossElement.className = `mt-2 mb-0 fw-bold ${netLoss < 0 ? 'text-success' : 'text-danger'}`;
             }
         }
 
         if (typeof ChartComponents === 'undefined') return;
 
+        const lowestWeight = Math.min(...weightedRows.map(row => row.weight));
         ChartComponents.createLineChart(
             'chart-weight',
             weightedRows.map(row => row.dateText),
@@ -144,7 +165,7 @@ const WellnessComponents = {
                 scales: {
                     y: {
                         beginAtZero: false,
-                        min: 170,
+                        min: Number.isFinite(lowestWeight) ? lowestWeight - 5 : undefined,
                         title: { display: true, text: 'Weight (lbs)', color: '#94a3b8' },
                         grid: { color: 'rgba(255, 255, 255, 0.05)' },
                         ticks: { color: '#94a3b8' }
