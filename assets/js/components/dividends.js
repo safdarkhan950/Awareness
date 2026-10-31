@@ -29,7 +29,10 @@ const DividendsComponents = {
     },
 
     parseAmount(value) {
-        const normalized = String(value || '').replace(/[$£€¥,%\s]/g, '').trim();
+        const normalized = String(value || '')
+            .replace(/[^\d,.-]/g, '')
+            .replace(/,(?=\d{3}(?:\D|$))/g, '')
+            .trim();
         const amount = Number(normalized);
         return normalized && Number.isFinite(amount) ? amount : 0;
     },
