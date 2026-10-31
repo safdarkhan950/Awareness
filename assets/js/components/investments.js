@@ -33,28 +33,64 @@ const InvestmentsComponents = {
         return normalized && Number.isFinite(amount) ? amount : 0;
     },
 
+    getColumnLabel(headers, index, fallback) {
+        const value = String(headers[index] || '').trim();
+        return value || fallback;
+    },
+
     sanitizeRows(rows) {
+        const headers = rows[0] || [];
+
         return rows.slice(1).map(row => {
             const dateText = String(row[0] || '').trim();
             const date = this.parseSheetDate(dateText);
+            const brokerageEntries = [1, 2].map(index => {
+                const rawHeader = String(headers[index] || '').trim();
+                const value = this.parseAmount(row[index]);
+                const fallbackName = index === 1 ? 'Brokerage 1' : 'Brokerage 2';
+                return {
+                    name: rawHeader || (value !== 0 ? fallbackName : ''),
+                    value
+                };
+            }).filter(item => item.name || item.value !== 0);
+            const retirementEntries = [3, 4, 5, 6].map((index, position) => {
+                const rawHeader = String(headers[index] || '').trim();
+                const value = this.parseAmount(row[index]);
+                return {
+                    name: rawHeader || (value !== 0 ? `Retirement ${position + 1}` : ''),
+                    value
+                };
+            }).filter(item => item.name || item.value !== 0);
+
+            const schd = this.parseAmount(row[1]);
+            const spyi = this.parseAmount(row[2]);
+            const rothIra = this.parseAmount(row[3]);
+            const roth401k = this.parseAmount(row[4]);
+            const employerMatch = this.parseAmount(row[5]);
+            const pension = this.parseAmount(row[6]);
 
             return {
                 date,
                 dateText,
-                schd: this.parseAmount(row[1]),
-                spyi: this.parseAmount(row[2]),
-                rothIra: this.parseAmount(row[3]),
-                roth401k: this.parseAmount(row[4]),
-                employerMatch: this.parseAmount(row[5]),
-                pension: this.parseAmount(row[6])
+                headers,
+                brokerage: brokerageEntries,
+                retirement: retirementEntries,
+                schd,
+                spyi,
+                rothIra,
+                roth401k,
+                employerMatch,
+                pension
             };
         }).filter(record => record.date);
     },
 
     formatMoney(value) {
-        return new Intl.NumberFormat(undefined, {
-            style: 'currency', currency: 'USD', maximumFractionDigits: 0
-        }).format(value);
+        return window.formatCurrencyValue
+            ? window.formatCurrencyValue(value, window.appConfig?.currency || 'USD', 0)
+            : new Intl.NumberFormat(undefined, {
+                style: 'currency', currency: 'USD', maximumFractionDigits: 0
+            }).format(value);
     },
 
     getMonthCount(records) {
@@ -65,11 +101,12 @@ const InvestmentsComponents = {
     },
 
     taxableTotal(record) {
-        return record.schd + record.spyi;
+        return (record.brokerage || []).reduce((sum, item) => sum + (item.value || 0), 0) || record.schd + record.spyi;
     },
 
     retirementTotal(record) {
-        return record.rothIra + record.roth401k + record.employerMatch + record.pension;
+        return (record.retirement || []).reduce((sum, item) => sum + (item.value || 0), 0)
+            || record.rothIra + record.roth401k + record.employerMatch + record.pension;
     },
 
     render(records) {
@@ -113,10 +150,15 @@ const InvestmentsComponents = {
     },
 
     renderAllocation(latest) {
+        const entries = [...(latest.brokerage || []), ...(latest.retirement || [])];
+        if (!entries.length) {
+            return;
+        }
+
         ChartComponents.createPieChart(
             'chart-investment-allocation',
-            ['SCHD', 'SPYI', 'Roth IRA', 'Roth 401k', 'Employer Match', 'Pension'],
-            [latest.schd, latest.spyi, latest.rothIra, latest.roth401k, latest.employerMatch, latest.pension],
+            entries.map(entry => entry.name),
+            entries.map(entry => entry.value),
             {
                 plugins: { legend: { display: true, position: 'right', labels: { color: '#94a3b8' } } }
             }
@@ -127,19 +169,22 @@ const InvestmentsComponents = {
         const accountColors = [
             '#38bdf8', '#22c55e', '#f59e0b', '#a78bfa', '#ec4899', '#94a3b8'
         ];
-        const fields = [
-            ['schd', 'SCHD'], ['spyi', 'SPYI'], ['rothIra', 'Roth IRA'],
-            ['roth401k', 'Roth 401k'], ['employerMatch', 'Employer Match'], ['pension', 'Pension']
+        const entries = [
+            ...(this.records.at(-1)?.brokerage || []),
+            ...(this.records.at(-1)?.retirement || [])
         ];
 
         ChartComponents.createChart(
             'chart-investment-history',
             'line',
             this.records.map(record => record.dateText),
-            fields.map(([field, label], index) => ({
-                label,
-                data: this.records.map(record => record[field]),
-                borderColor: accountColors[index],
+            entries.map((entry, index) => ({
+                label: entry.name,
+                data: this.records.map(record => {
+                    const series = [...(record.brokerage || []), ...(record.retirement || [])];
+                    return series[index]?.value || 0;
+                }),
+                borderColor: accountColors[index % accountColors.length],
                 backgroundColor: 'transparent',
                 borderWidth: 2,
                 tension: 0.2,

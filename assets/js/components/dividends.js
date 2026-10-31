@@ -66,9 +66,11 @@ const DividendsComponents = {
     },
 
     formatMoney(value) {
-        return new Intl.NumberFormat(undefined, {
-            style: 'currency', currency: 'USD', maximumFractionDigits: 2
-        }).format(value);
+        return window.formatCurrencyValue
+            ? window.formatCurrencyValue(value, window.appConfig?.currency || 'USD', 2)
+            : new Intl.NumberFormat(undefined, {
+                style: 'currency', currency: 'USD', maximumFractionDigits: 2
+            }).format(value);
     },
 
     formatPercent(value) {
@@ -76,6 +78,27 @@ const DividendsComponents = {
     },
 
     render(tickers) {
+        if (!window.appConfig?.dividend_id) {
+            const chart = ChartComponents?.charts?.get('chart-dividend-monthly');
+            if (chart) {
+                chart.destroy();
+                ChartComponents.charts.delete('chart-dividend-monthly');
+            }
+            ['dividend-total-yearly', 'dividend-total-monthly', 'dividend-fire-percent', 'dividend-fire-caption',
+             'dividend-income-percent', 'dividend-income-caption', 'dividend-live-price', 'dividend-yearly-income',
+             'dividend-monthly-income', 'dividend-reinvested', 'dividend-yield', 'dividend-dollar-growth',
+             'dividend-percent-growth', 'dividend-average-cost', 'dividend-shares-owned', 'dividend-market-value',
+             'dividend-transaction-count'].forEach(id => {
+                const element = document.getElementById(id);
+                if (element) element.textContent = '--';
+            });
+            const transactionList = document.getElementById('dividend-transaction-list');
+            if (transactionList) {
+                transactionList.innerHTML = '<tr><td colspan="5" class="text-center text-secondary py-4">No dividend data configured</td></tr>';
+            }
+            return;
+        }
+
         this.tickers = tickers;
         const knownTickers = ['SCHD', 'SPYI'].map(key => tickers[key]).filter(Boolean);
         const yearly = knownTickers.reduce((sum, ticker) => sum + ticker.yearlyDividend, 0);

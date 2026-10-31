@@ -27,18 +27,51 @@ const WellnessComponents = {
         return Number.isNaN(date.getTime()) ? null : date;
     },
 
+    getWeightMetadata(rows) {
+        let weightIndex = 3;
+        let weightUnit = 'lbs';
+
+        const headerRows = rows.slice(0, 10);
+        for (const row of headerRows) {
+            for (let index = 0; index < row.length; index += 1) {
+                const cellText = String(row[index] || '').trim().toLowerCase();
+                if (!cellText.includes('weight')) continue;
+
+                weightIndex = index;
+                if (cellText.includes('kg')) weightUnit = 'kg';
+                else if (cellText.includes('lb')) weightUnit = 'lbs';
+                return { weightIndex, weightUnit };
+            }
+        }
+
+        return { weightIndex, weightUnit };
+    },
+
+    parseWeightValue(rawValue) {
+        const normalized = String(rawValue || '').replace(/,/g, '').trim();
+        if (!normalized) return null;
+
+        const match = normalized.match(/-?\d+(?:\.\d+)?/);
+        if (!match) return null;
+
+        const numericValue = Number(match[0]);
+        return Number.isFinite(numericValue) ? numericValue : null;
+    },
+
     sanitizeRows(rows) {
+        const { weightIndex } = this.getWeightMetadata(rows);
+
         return rows
             .slice(2)
             .map(row => {
                 const dateText = String(row[0] || '').trim();
                 const date = this.parseSheetDate(dateText);
-                const weightText = String(row[3] || '').replace(/,/g, '').trim();
+                const weightText = this.parseWeightValue(row[weightIndex]);
 
                 return {
                     date,
                     dateText,
-                    weight: weightText ? Number(weightText) : null,
+                    weight: weightText,
                     diet: String(row[2] || '').trim().toUpperCase(),
                     gym: String(row[4] || '').trim().toUpperCase()
                 };
@@ -131,25 +164,32 @@ const WellnessComponents = {
 
     render(rows) {
         const wellnessRows = this.sanitizeRows(rows);
+        const weightMeta = this.getWeightMetadata(rows);
         const weightedRows = this.filterWeightRows(wellnessRows.filter(row => row.weight !== null));
         const currentWeightElement = document.getElementById('wellness-current-weight');
         const netLossElement = document.getElementById('wellness-net-loss');
+        const weightUnit = weightMeta.weightUnit;
 
         this.renderSummary(wellnessRows);
         this.renderActivityChart(wellnessRows);
 
-        if (weightedRows.length) {
-            const startingWeight = weightedRows[0].weight;
-            const currentWeight = weightedRows.at(-1).weight;
-            const netLoss = currentWeight - startingWeight;
+        if (currentWeightElement) {
+            currentWeightElement.innerHTML = weightedRows.length
+                ? `${weightedRows.at(-1).weight.toLocaleString()} <span class="fs-6 fw-normal" style="color: #cbd5e1;">${weightUnit}</span>`
+                : `-- <span class="fs-6 fw-normal" style="color: #cbd5e1;">${weightUnit}</span>`;
+        }
 
-            if (currentWeightElement) {
-                currentWeightElement.innerHTML = `${currentWeight.toLocaleString()} <span class="fs-6 fw-normal" style="color: #cbd5e1;">lbs</span>`;
-            }
-            if (netLossElement) {
-                const lossSign = netLoss > 0 ? '+' : '';
-                netLossElement.innerHTML = `${lossSign}${netLoss.toLocaleString()} <span class="fs-6 fw-normal" style="color: #cbd5e1;">lbs</span>`;
-                netLossElement.className = `mt-2 mb-0 fw-bold ${netLoss < 0 ? 'text-success' : 'text-danger'}`;
+        if (netLossElement) {
+            if (weightedRows.length) {
+                const startingWeight = weightedRows[0].weight;
+                const currentWeight = weightedRows.at(-1).weight;
+                const netChange = currentWeight - startingWeight;
+                const changeSign = netChange > 0 ? '+' : '';
+                netLossElement.innerHTML = `${changeSign}${netChange.toLocaleString()} <span class="fs-6 fw-normal" style="color: #cbd5e1;">${weightUnit}</span>`;
+                netLossElement.className = `mt-2 mb-0 fw-bold ${netChange < 0 ? 'text-success' : 'text-danger'}`;
+            } else {
+                netLossElement.innerHTML = `-- <span class="fs-6 fw-normal" style="color: #cbd5e1;">${weightUnit}</span>`;
+                netLossElement.className = 'mt-2 mb-0 fw-bold text-success';
             }
         }
 
@@ -161,12 +201,12 @@ const WellnessComponents = {
             weightedRows.map(row => row.dateText),
             weightedRows.map(row => row.weight),
             {
-                label: 'Weight (lbs)',
+                label: `Weight (${weightUnit})`,
                 scales: {
                     y: {
                         beginAtZero: false,
                         min: Number.isFinite(lowestWeight) ? lowestWeight - 5 : undefined,
-                        title: { display: true, text: 'Weight (lbs)', color: '#94a3b8' },
+                        title: { display: true, text: `Weight (${weightUnit})`, color: '#94a3b8' },
                         grid: { color: 'rgba(255, 255, 255, 0.05)' },
                         ticks: { color: '#94a3b8' }
                     },

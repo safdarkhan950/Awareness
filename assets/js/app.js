@@ -2,6 +2,7 @@
 window.appConfig = {
     "awareness_id": "",
     "dividend_id": "",
+    "currency": "USD",
     "client_id": "",
     "developer_key": "",
     "wellness_sheet_name": "",
@@ -9,6 +10,30 @@ window.appConfig = {
     "investment_sheet_name": "",
     "dividend_schd_sheet_name": "",
     "dividend_spyi_sheet_name": ""
+};
+
+window.getCurrencyCode = function() {
+    const code = String(window.appConfig?.currency || 'USD').trim().toUpperCase();
+    return code || 'USD';
+};
+
+window.formatCurrencyValue = function(value, currencyCode = window.getCurrencyCode(), maximumFractionDigits = 2) {
+    const numericValue = Number(value || 0);
+    const safeCode = String(currencyCode || 'USD').trim().toUpperCase();
+
+    try {
+        return new Intl.NumberFormat(undefined, {
+            style: 'currency',
+            currency: safeCode,
+            maximumFractionDigits
+        }).format(Number.isFinite(numericValue) ? numericValue : 0);
+    } catch (_error) {
+        return new Intl.NumberFormat(undefined, {
+            style: 'currency',
+            currency: 'USD',
+            maximumFractionDigits
+        }).format(Number.isFinite(numericValue) ? numericValue : 0);
+    }
 };
 
 const SHEET_DATA_CACHE_KEY = 'awarenessSheetData';
@@ -117,6 +142,48 @@ async function fetchAllSpreadsheetTabs() {
         showDataStatus(`Unable to load spreadsheet data. ${error.message}`, 'error');
         document.dispatchEvent(new CustomEvent('awareness:data-error', { detail: error.message }));
         throw error;
+    }
+}
+
+function hasDividendConfiguration() {
+    return Boolean(window.appConfig?.dividend_id && String(window.appConfig.dividend_id).trim());
+}
+
+function updateDividendTabVisibility() {
+    const dividendConfigured = hasDividendConfiguration();
+    const tabButton = document.getElementById('tab-dividends');
+    const panel = document.getElementById('panel-dividends');
+
+    if (tabButton) {
+        tabButton.classList.toggle('d-none', !dividendConfigured);
+    }
+    if (panel) {
+        panel.classList.toggle('d-none', !dividendConfigured);
+    }
+
+    if (!dividendConfigured) {
+        const chart = ChartComponents?.charts?.get('chart-dividend-monthly');
+        if (chart) {
+            chart.destroy();
+            ChartComponents.charts.delete('chart-dividend-monthly');
+        }
+
+        const emptyFields = [
+            'dividend-total-yearly', 'dividend-total-monthly', 'dividend-fire-percent', 'dividend-fire-caption',
+            'dividend-income-percent', 'dividend-income-caption', 'dividend-live-price', 'dividend-yearly-income',
+            'dividend-monthly-income', 'dividend-reinvested', 'dividend-yield', 'dividend-dollar-growth',
+            'dividend-percent-growth', 'dividend-average-cost', 'dividend-shares-owned', 'dividend-market-value',
+            'dividend-transaction-count'
+        ];
+        emptyFields.forEach(fieldId => {
+            const field = document.getElementById(fieldId);
+            if (field) field.textContent = '--';
+        });
+
+        const transactions = document.getElementById('dividend-transaction-list');
+        if (transactions) {
+            transactions.innerHTML = '<tr><td colspan="5" class="text-center text-secondary py-4">No dividend data configured</td></tr>';
+        }
     }
 }
 
@@ -238,6 +305,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (typeof DividendsComponents !== 'undefined') {
         DividendsComponents.init();
     }
+    updateDividendTabVisibility();
 
     /* ====================================================================== */
     /* NAVIGATION VIEW ROUTING SUBROUTINE                                     */
@@ -249,17 +317,25 @@ document.addEventListener("DOMContentLoaded", () => {
         if (!button) return;
 
         button.addEventListener('click', () => {
+            if (tabId === 'dividends' && !hasDividendConfiguration()) {
+                return;
+            }
+
             /* Deactivate concurrent view panels and reset tracking states */
             tabs.forEach(id => {
-                document.getElementById(`panel-${id}`).classList.add('d-none');
+                const panel = document.getElementById(`panel-${id}`);
+                if (panel) panel.classList.add('d-none');
                 
                 const btn = document.getElementById(`tab-${id}`);
-                btn.classList.remove('btn-success', 'active');
-                btn.classList.add('btn-outline-secondary', 'text-light', 'border-0');
+                if (btn) {
+                    btn.classList.remove('btn-success', 'active');
+                    btn.classList.add('btn-outline-secondary', 'text-light', 'border-0');
+                }
             });
 
             /* Activate targeted view panel */
-            document.getElementById(`panel-${tabId}`).classList.remove('d-none');
+            const activePanel = document.getElementById(`panel-${tabId}`);
+            if (activePanel) activePanel.classList.remove('d-none');
 
             /* Commit structural display class rules to selection targets */
             button.classList.remove('btn-outline-secondary', 'text-light', 'border-0');
@@ -287,6 +363,7 @@ function saveAppConfiguration() {
         window.appConfig = {
             "awareness_id": parsedJsonObj.awareness_id || "",
             "dividend_id": parsedJsonObj.dividend_id || "",
+            "currency": (parsedJsonObj.currency || 'USD').toString().trim().toUpperCase() || "USD",
             "client_id": parsedJsonObj.client_id || "",
             "developer_key": parsedJsonObj.developer_key || "",
             "wellness_sheet_name": parsedJsonObj.wellness_sheet_name || "",
@@ -309,6 +386,7 @@ function saveAppConfiguration() {
             setTimeout(() => { contextStatus.innerHTML = ""; }, 3000);
         }
         console.log("Awareness Engine: JSON state parsed and synchronized.", window.appConfig);
+        updateDividendTabVisibility();
         googleAccessToken = '';
         googleTokenClient = null;
         initializeGoogleAuthorization();

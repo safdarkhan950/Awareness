@@ -69,7 +69,9 @@ const BudgetComponents = {
     },
 
     formatMoney(value) {
-        return new Intl.NumberFormat(undefined, { style: 'currency', currency: 'USD', maximumFractionDigits: 2 }).format(value);
+        return window.formatCurrencyValue
+            ? window.formatCurrencyValue(value, window.appConfig?.currency || 'USD', 2)
+            : new Intl.NumberFormat(undefined, { style: 'currency', currency: 'USD', maximumFractionDigits: 2 }).format(value);
     },
 
     populatePeriodFilter() {
@@ -91,11 +93,9 @@ const BudgetComponents = {
     renderSummaries() {
         const totalIncome = this.records.reduce((sum, record) => sum + (record.income || 0), 0);
         const totalExpenses = this.records.reduce((sum, record) => sum + (record.expense || 0), 0);
-        const now = new Date();
-        const currentMonth = this.records.filter(record =>
-            record.date.getUTCMonth() === now.getUTCMonth()
-            && record.date.getUTCFullYear() === now.getUTCFullYear()
-        );
+        const monthCount = new Set(this.records.map(record => this.periodKey(record))).size || (this.records.length ? 1 : 0);
+        const averageIncome = monthCount ? totalIncome / monthCount : 0;
+        const averageExpenses = monthCount ? totalExpenses / monthCount : 0;
 
         document.getElementById('budget-total-income').textContent = this.formatMoney(totalIncome);
         document.getElementById('budget-total-expenses').textContent = this.formatMoney(totalExpenses);
@@ -105,10 +105,8 @@ const BudgetComponents = {
         netElement.textContent = this.formatMoney(netSavings);
         netElement.className = `mt-2 mb-0 fw-bold ${netSavings >= 0 ? 'text-success' : 'text-danger'}`;
 
-        document.getElementById('budget-month-income').textContent =
-            this.formatMoney(currentMonth.reduce((sum, record) => sum + (record.income || 0), 0));
-        document.getElementById('budget-month-expenses').textContent =
-            this.formatMoney(currentMonth.reduce((sum, record) => sum + (record.expense || 0), 0));
+        document.getElementById('budget-month-income').textContent = this.formatMoney(averageIncome);
+        document.getElementById('budget-month-expenses').textContent = this.formatMoney(averageExpenses);
     },
 
     renderMonthlyChart() {
